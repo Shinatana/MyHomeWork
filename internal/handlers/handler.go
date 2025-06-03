@@ -23,13 +23,13 @@ func GetUserHandler(db *pgx.Conn) http.HandlerFunc {
 		id := r.PathValue("id")
 		ctx := context.Background()
 
-		var userID bool
+		var userID string
 		// найди правильную ошибку
 		err := db.QueryRow(ctx, "SELECT id FROM users WHERE id=$1", id).Scan(&userID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				w.WriteHeader(http.StatusConflict)
-				if err := json.NewEncoder(w).Encode(errResponse{"ID already exists"}); err != nil {
+				if err := json.NewEncoder(w).Encode(errResponse{"ID not found"}); err != nil {
 					log.Printf("Error encoding JSON response: %v", err)
 				}
 				return
