@@ -98,21 +98,11 @@ func main() {
 	}
 	defer db.Close(context.Background())
 
-	//мне кажется этому тут не место, но не уверена, куда это запихнуть
-	// или, возможно, есть код, который вытаскивает это сам...
 	dbURL := "postgres://Admin:123@localhost:5432/ID?sslmode=disable"
 	migrationsPath := "/Users/konoko/Documents/Go/Homework3/study/migrations"
 
 	if err := migrate.RunMigrations(dbURL, migrationsPath); err != nil {
 		log.Fatalf("Migration failed: %v", err)
-	}
-	_, err = db.Exec(context.Background(), `
-		CREATE TABLE IF NOT EXISTS users (
-		id TEXT PRIMARY KEY
-	)
-	`)
-	if err != nil {
-		log.Fatalf("failed to create table: %v", err)
 	}
 
 	mux := http.NewServeMux()
