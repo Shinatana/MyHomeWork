@@ -21,6 +21,8 @@ func RunMigrations(dbURL, migrationsPath string) error {
 			log.Printf("Nothing to migrate")
 			return nil
 		}
+		log.Printf("Migration failed: %v", err)
+		return err
 	}
 
 	log.Printf("Migrations successfully migrated")
