@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"github.com/jackc/pgx/v5"
@@ -20,16 +20,23 @@ type userIdResponse struct {
 
 func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
+
+	var buff bytes.Buffer
+	if err := json.NewEncoder(&buff).Encode(data); err != nil {
+		http.Error(w, "Error on server", http.StatusInternalServerError)
 		log.Printf("Error encoding JSON response: %v", err)
+		return
+	}
+	w.WriteHeader(status)
+	if _, err := w.Write(buff.Bytes()); err != nil {
+		log.Printf("Write error: %v", err)
 	}
 }
 
 func GetUserHandler(db *pgx.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
-		ctx := context.Background()
+		ctx := r.Context()
 
 		var userID string
 		err := db.QueryRow(ctx, "SELECT id FROM users WHERE id=$1", id).Scan(&userID)
@@ -49,7 +56,8 @@ func GetUserHandler(db *pgx.Conn) http.HandlerFunc {
 func PostUserHandler(db *pgx.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
-		ctx := context.Background()
+		ctx := r.Context()
+
 		_, err := db.Exec(ctx, "INSERT INTO users (id) VALUES ($1)", id)
 		if err != nil {
 			var pgErr *pgconn.PgError
