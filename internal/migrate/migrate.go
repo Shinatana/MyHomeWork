@@ -14,13 +14,13 @@ func RunMigrations(dbURL, migrationsPath string) error {
 	if err != nil {
 		log.Printf("Failed to create migrate instance: %v", err)
 		return err
-		//уточнить
 	}
 	err = m.Up()
-
-	if errors.Is(err, migrate.ErrNoChange) {
-		log.Printf("Nothing to migrate")
-		return nil
+	if err != nil {
+		if errors.Is(err, migrate.ErrNoChange) {
+			log.Printf("Nothing to migrate")
+			return nil
+		}
 	}
 
 	log.Printf("Migrations successfully migrated")

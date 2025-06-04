@@ -18,38 +18,31 @@ type userIdResponse struct {
 	Id string `json:"id"`
 }
 
+func writeJSON(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Printf("Error encoding JSON response: %v", err)
+	}
+}
+
 func GetUserHandler(db *pgx.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		ctx := context.Background()
 
 		var userID string
-		// найди правильную ошибку
 		err := db.QueryRow(ctx, "SELECT id FROM users WHERE id=$1", id).Scan(&userID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				w.WriteHeader(http.StatusConflict)
-				if err := json.NewEncoder(w).Encode(errResponse{"ID not found"}); err != nil {
-					log.Printf("Error encoding JSON response: %v", err)
-				}
+				writeJSON(w, http.StatusConflict, errResponse{"ID not found"})
 				return
 			}
-
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			if err := json.NewEncoder(w).Encode(errResponse{"Internal server error"}); err != nil {
-				log.Printf("Error encoding JSON response: %v", err)
-
-			}
+			writeJSON(w, http.StatusInternalServerError, errResponse{"Internal server error"})
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		// верни нормальные данные
-		if err := json.NewEncoder(w).Encode(userIdResponse{Id: id}); err != nil {
-			log.Printf("Error encoding JSON response: %v", err)
-		}
+		writeJSON(w, http.StatusOK, userIdResponse{Id: id})
 	}
 }
 
@@ -61,28 +54,12 @@ func PostUserHandler(db *pgx.Conn) http.HandlerFunc {
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-				// Дубликат ключа — возвращаем 409 Conflict
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusConflict)
-				if err := json.NewEncoder(w).Encode(errResponse{"ID already exists"}); err != nil {
-					log.Printf("Error encoding JSON response: %v", err)
-				}
+				writeJSON(w, http.StatusConflict, errResponse{"ID already exists"})
 				return
 			}
-
-			// Другие ошибки
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			if err := json.NewEncoder(w).Encode(errResponse{"Error adding ID"}); err != nil {
-				log.Printf("Error encoding JSON response: %v", err)
-			}
+			writeJSON(w, http.StatusInternalServerError, errResponse{"Error adding ID"})
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(userIdResponse{Id: id}); err != nil {
-			log.Printf("Error encoding JSON response: %v", err)
-		}
+		writeJSON(w, http.StatusCreated, userIdResponse{Id: id})
 	}
 }

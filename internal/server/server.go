@@ -3,24 +3,15 @@ package server
 import (
 	"context"
 	"errors"
-	"github.com/jackc/pgx/v5"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
 	"time"
-
-	"MyHomeWork/internal/handlers"
 )
 
-func RunServer(db *pgx.Conn, addr string) error {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /users/{id}", handlers.GetUserHandler(db))
-	mux.HandleFunc("POST /users/{id}", handlers.PostUserHandler(db))
-
+func StartServer(addr string, handler http.Handler) (*http.Server, error) {
 	srv := &http.Server{
 		Addr:    addr,
-		Handler: mux,
+		Handler: handler,
 	}
 
 	go func() {
@@ -29,14 +20,14 @@ func RunServer(db *pgx.Conn, addr string) error {
 		}
 	}()
 
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt)
-	<-stop
+	return srv, nil
+}
+
+func ShutdownServer(srv *http.Server, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 
 	log.Println("Shutting down server...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
 		return err
