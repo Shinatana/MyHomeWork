@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func StartServer(addr string, handler http.Handler) (*http.Server, error) {
+func StartServer(addr string, handler http.Handler, shutdownTimeout time.Duration) func() error {
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: handler,
@@ -20,19 +20,19 @@ func StartServer(addr string, handler http.Handler) (*http.Server, error) {
 		}
 	}()
 
-	return srv, nil
-}
+	log.Println("Server started")
 
-func ShutdownServer(srv *http.Server, timeout time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
+	return func() error {
+		log.Println("Shutting down server...")
 
-	log.Println("Shutting down server...")
+		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
-		return err
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Printf("Failed to shutdown server gracefully: %v", err)
+			return err
+		}
+		log.Println("Server stopped gracefully")
+		return nil
 	}
-
-	log.Println("Server stopped gracefully")
-	return nil
 }

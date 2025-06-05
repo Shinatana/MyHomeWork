@@ -19,10 +19,11 @@ const (
 )
 
 func main() {
+	dbURLBase := "postgres://Admin:123@localhost:5432/ID"
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeoutShutdownSQL)
 	defer cancel()
 
-	db, err := pgx.Connect(ctx, "postgres://Admin:123@localhost:5432/ID")
+	db, err := pgx.Connect(ctx, dbURLBase)
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v", err)
 	}
@@ -33,9 +34,9 @@ func main() {
 		}
 	}()
 
-	dbURL := "postgres://Admin:123@localhost:5432/ID?sslmode=disable"
+	dbURLWithSSL := dbURLBase + "?sslmode=disable"
 	migrationsPath := "/Users/konoko/Documents/Go/MyHomeWork/internal/migrate/sqlMigrate"
-	if err := migrate.RunMigrations(dbURL, migrationsPath); err != nil {
+	if err := migrate.RunMigrations(dbURLWithSSL, migrationsPath); err != nil {
 		log.Fatalf("Migration failed: %v", err)
 	}
 
@@ -43,16 +44,13 @@ func main() {
 	r.HandleFunc("/users/", handlers.GetUserHandler(db))
 	r.HandleFunc("/users/", handlers.PostUserHandler(db))
 
-	srv, err := server.StartServer(":8080", r)
-	if err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+	stopServer := server.StartServer(":8080", r, defaultTimeoutShutdownServer)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
 
-	if err := server.ShutdownServer(srv, defaultTimeoutShutdownServer); err != nil {
-		log.Fatalf("Failed to shutdown server: %v", err)
+	if err := stopServer(); err != nil {
+		log.Fatalf("Server stopped with error: %v", err)
 	}
 }

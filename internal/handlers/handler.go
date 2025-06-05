@@ -19,7 +19,6 @@ type userIdResponse struct {
 }
 
 func writeJSON(w http.ResponseWriter, status int, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
 
 	var buff bytes.Buffer
 	if err := json.NewEncoder(&buff).Encode(data); err != nil {
@@ -27,6 +26,7 @@ func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 		log.Printf("Error encoding JSON response: %v", err)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	if _, err := w.Write(buff.Bytes()); err != nil {
 		log.Printf("Write error: %v", err)
