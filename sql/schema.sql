@@ -1,0 +1,8 @@
+CREATE TABLE users (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL CHECK (
+        LENGTH(TRIM(name)) > 3 AND
+        LENGTH(TRIM(name)) <= 100
+    ),
+    age INTEGER NOT NULL CHECK ( age > 0 )
+);
