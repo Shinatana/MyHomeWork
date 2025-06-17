@@ -1,17 +1,20 @@
-package http
+package server
 
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
+)
+
+const (
+	DefaultServerShutdownTime = 5 * time.Second
 )
 
 type Server struct {
 	server *http.Server
 }
 
-func NewHttpServer(handler http.Handler) *Server {
+func NewHttpServer(addr string, handler http.Handler) *Server {
 	return &Server{
 		server: &http.Server{
 			Addr:    addr,
@@ -27,8 +30,8 @@ func (s *Server) Addr() string {
 	return s.server.Addr
 }
 
-func (s *Server) Close(t time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), t)
+func (s *Server) Close() error {
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultServerShutdownTime)
 	defer cancel()
 
 	return s.server.Shutdown(ctx)
