@@ -1,17 +1,30 @@
 package migrate
 
 import (
+	"bufio"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	migratepgx "github.com/golang-migrate/migrate/v4/database/pgx"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5"
 	"log"
+	"os"
+	"strings"
 )
 
-func RunMigrations(direction *string, dbURL string) error {
+func RunMigrations(dbURL string) error {
+
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter migration direction (up/down): ")
+	directionInput, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatalf("Failed to read migration direction: %v", err)
+	}
+	directionInput = strings.TrimSpace(directionInput)
+
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, dbURL)
 	if err != nil {
@@ -30,14 +43,14 @@ func RunMigrations(direction *string, dbURL string) error {
 		return err
 	}
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations",
+		"file://sql/migrations",
 		"pgx",
 		driver)
 	if err != nil {
 		return err
 	}
 
-	switch *direction {
+	switch directionInput {
 	case "up":
 		err = m.Up()
 		if err != nil {
@@ -63,7 +76,7 @@ func RunMigrations(direction *string, dbURL string) error {
 		}
 		log.Println("Migrations down completed")
 	default:
-		return fmt.Errorf("unknown migration direction: %s", direction)
+		return fmt.Errorf("unknown migration direction: %s", directionInput)
 	}
 	return nil
 }

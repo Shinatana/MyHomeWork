@@ -2,41 +2,29 @@ package db
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"time"
-
-	"github.com/jackc/pgx/v5"
 )
 
 const defaultTimeout = 5 * time.Second
 
-func Start(dbURL string, ctx context.Context) (*pgx.Conn, context.Context) {
-	// Создаём контекст с таймаутом для подключения к базе
+func ConnectDB(ctx context.Context, dbURL string) (*pgxpool.Pool, error) {
 	ctxBD, cancel := context.WithTimeout(ctx, defaultTimeout)
+	defer cancel()
 
-	// Важно: отменять таймаут когда он не нужен
-	// Но если возвращаем ctx, отмену должен делать вызывающий
-	// чтобы таймаут был актуален при использовании
-
-	// Подключаемся к базе
-	conn, err := pgx.Connect(ctxBD, dbURL)
+	pool, err := pgxpool.New(ctxBD, dbURL)
 	if err != nil {
-		log.Printf("Connect to %s failed: %v", dbURL, err)
-		cancel()
-		return nil, nil
+		return nil, err
 	}
 
-	return conn, ctxBD
-}
-
-func Stop(ctx context.Context, conn *pgx.Conn, cancel context.CancelFunc) {
-	// Закрываем соединение с базой
-	if conn != nil {
-		_ = conn.Close(ctx)
+	// Пробуем сделать ping (optional)
+	err = pool.Ping(ctx)
+	if err != nil {
+		pool.Close()
+		return nil, err
 	}
 
-	// Отменяем контекст (если был таймаут/отмена)
-	if cancel != nil {
-		cancel()
-	}
+	log.Println("Connected to DB")
+	return pool, nil
 }
