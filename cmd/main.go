@@ -9,11 +9,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Shinatana/MyHomeWork/internal/conf"
-	internalHttp "github.com/Shinatana/MyHomeWork/internal/http"
-	userHandlers "github.com/Shinatana/MyHomeWork/internal/http/handlers/user"
-	"github.com/Shinatana/MyHomeWork/internal/log"
-	"github.com/Shinatana/MyHomeWork/internal/repo"
+	"MyHomework/internal/conf"
+	internalHttp "MyHomework/internal/http"
+	userHandlers "MyHomework/internal/http/handlers/user"
+	"MyHomework/internal/log"
+	"MyHomework/internal/repo"
 )
 
 const (

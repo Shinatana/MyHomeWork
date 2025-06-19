@@ -5,3 +5,13 @@ type GetUserResponse struct {
 	Name string `json:"name"`
 	Age  int    `json:"age"`
 }
+
+type PostUserRequest struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+type CreateUserResponse struct {
+	ID      int64  `json:"id"`
+	Message string `json:"message"`
+}
