@@ -6,3 +6,4 @@ CREATE TABLE users (
     ),
     age INTEGER NOT NULL CHECK ( age > 0 )
 );
+
