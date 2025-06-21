@@ -66,7 +66,7 @@ func (db *DB) UpsertUser(ctx context.Context, name string, age int) (int64, erro
 	var id int64
 	err := db.db.QueryRowContext(ctx, upsertUserQuery, name, age).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("failed to upsert user: %w", err)
+		return -1, fmt.Errorf("failed to upsert user: %w", err)
 	}
 	return id, nil
 }

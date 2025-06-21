@@ -76,13 +76,13 @@ func (u *User) Get() http.HandlerFunc {
 		}
 		lg.Debug("user found", "user", result)
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
 		if err = json.NewEncoder(w).Encode(result); err != nil {
 			lg.Error("failed to encode response", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -98,7 +98,7 @@ func (u *User) Post() http.HandlerFunc {
 
 		var createUser models.PostUserRequest
 		if err := json.NewDecoder(r.Body).Decode(&createUser); err != nil {
-			lg.Error("Invalid input")
+			lg.Error("Invalid input", "error", err)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}
@@ -108,34 +108,28 @@ func (u *User) Post() http.HandlerFunc {
 			return
 		}
 		if createUser.Age < 0 {
-			lg.Error("Age is negative value")
+			lg.Error("Age is negative value.", "age", createUser.Age)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}
 
 		id, err := u.db.UpsertUser(r.Context(), createUser.Name, createUser.Age)
 		if err != nil {
-			lg.Error("failed to write to database")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		if id == 0 {
-			lg.Error("failed to write to database")
+			lg.Error("failed to write to database", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		resp := models.CreateUserResponse{
-			ID:      id,
-			Message: "User successfully created",
+			ID: id,
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			lg.Error("failed to encode response")
+			lg.Error("failed to encode response", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
 	}
 }

@@ -12,6 +12,5 @@ type PostUserRequest struct {
 }
 
 type CreateUserResponse struct {
-	ID      int64  `json:"id"`
-	Message string `json:"message"`
+	ID int64 `json:"id"`
 }
