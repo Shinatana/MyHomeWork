@@ -1,6 +1,7 @@
 package main
 
 import (
+	"MyHomework/pkg/conf"
 	"context"
 	"errors"
 	"net/http"
@@ -9,7 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	"MyHomework/internal/conf"
 	internalHttp "MyHomework/internal/http"
 	userHandlers "MyHomework/internal/http/handlers/user"
 	"MyHomework/internal/log"
@@ -21,8 +21,8 @@ const (
 )
 
 func main() {
-	// init cfg
-	cfg, err := conf.NewCfg()
+	// init cfg "
+	cfg, err := conf.NewCfg("pkg/conf/config.yaml")
 	if err != nil {
 		log.NewLog("", "").Error(err.Error())
 		os.Exit(1)
@@ -39,7 +39,7 @@ func main() {
 	)
 
 	// connect to db
-	db, err := repo.NewDB(cfg.DbDSN)
+	db, err := repo.NewDB(cfg.DSN)
 	if err != nil {
 		lg.Error(err.Error())
 		os.Exit(1)

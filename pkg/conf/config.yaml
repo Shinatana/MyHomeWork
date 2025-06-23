@@ -1,0 +1,5 @@
+
+  dsn: "postgres://user:test@localhost:5432/mydb?sslmode=disable"
+  log_format: "json"
+  log_level: "error"
+  http_port: 8080
