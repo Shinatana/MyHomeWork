@@ -21,13 +21,12 @@ const (
 )
 
 func main() {
-	// init cfg "
+	// init cfg
 	cfg, err := conf.NewCfg("pkg/conf/config.yaml")
 	if err != nil {
 		log.NewLog("", "").Error(err.Error())
 		os.Exit(1)
 	}
-
 	// create logger
 	lg := log.NewLog(cfg.LogFormat, cfg.LogLevel)
 	lg.Debug(
