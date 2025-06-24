@@ -1,8 +1,8 @@
 package conf
 
 import (
-	"errors"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
 )
 
@@ -25,21 +25,13 @@ func NewCfg(configFile string) (*Conf, error) {
 		return nil, fmt.Errorf("unable to decode config into struct: %w", err)
 	}
 
-	// validate env
-	if cfg.DSN == "" {
-		return nil, errors.New("empty DSN")
+	validate := validator.New()
+
+	err := validate.Struct(&cfg)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed validaion: %w", err)
 	}
 
-	if cfg.LogFormat != "json" && cfg.LogFormat != "text" {
-		return nil, errors.New("wrong log format, must be json or text")
-	}
-
-	if cfg.LogLevel != "debug" && cfg.LogLevel != "info" && cfg.LogLevel != "warn" && cfg.LogLevel != "error" {
-		return nil, errors.New("wrong log level, must be debug, info, warn or error")
-	}
-
-	if cfg.HttpPort < 1024 || cfg.HttpPort > 65535 {
-		return nil, errors.New("port is out of valid range 1024-65535")
-	}
 	return &cfg, nil
 }
