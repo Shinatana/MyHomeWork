@@ -3,21 +3,22 @@ package conf
 import (
 	"errors"
 	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
-const prefix = "MYAPP"
+const (
+	prefix    = "MYAPP"
+	filenames = ".env"
+)
 
 func NewCfg(configFile string) (*Conf, error) {
+
+	_ = godotenv.Load(filenames)
+
 	viper.SetConfigFile(configFile)
 
-	if err := viper.ReadInConfig(); err != nil {
-		var configFileNotFound viper.ConfigFileNotFoundError
-		if !errors.Is(err, &configFileNotFound) {
-			return nil, fmt.Errorf("error reading config file: %w", err)
-		}
-		return nil, errors.New("config file not found")
-	}
+	_ = viper.ReadInConfig()
 
 	viper.SetEnvPrefix(prefix)
 	viper.AutomaticEnv()

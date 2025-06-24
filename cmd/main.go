@@ -18,11 +18,12 @@ import (
 
 const (
 	defaultHttpShutdownTimeout = 5 * time.Second
+	configFile                 = "internal/conf/config.yaml"
 )
 
 func main() {
 	// init cfg
-	cfg, err := conf.NewCfg("pkg/conf/config.yaml")
+	cfg, err := conf.NewCfg(configFile)
 	if err != nil {
 		log.NewLog("", "").Error(err.Error())
 		os.Exit(1)

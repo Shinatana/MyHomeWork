@@ -1,4 +1,8 @@
 
+# Пример конфигурации (значения берутся из переменных окружения)
+# dsn: "postgres://<user>:<password>@<host>:<port>/<db>?sslmode=disable"
+
+
 dsn: "postgres://user:test@localhost:5432/mydb?sslmode=disable"
 log_format: "json"
 log_level: "error"
