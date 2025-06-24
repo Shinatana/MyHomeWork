@@ -1,6 +1,7 @@
 package main
 
 import (
+	"MyHomework/internal/conf"
 	"context"
 	"errors"
 	"net/http"
@@ -9,25 +10,24 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Shinatana/MyHomeWork/internal/conf"
-	internalHttp "github.com/Shinatana/MyHomeWork/internal/http"
-	userHandlers "github.com/Shinatana/MyHomeWork/internal/http/handlers/user"
-	"github.com/Shinatana/MyHomeWork/internal/log"
-	"github.com/Shinatana/MyHomeWork/internal/repo"
+	internalHttp "MyHomework/internal/http"
+	userHandlers "MyHomework/internal/http/handlers/user"
+	"MyHomework/internal/log"
+	"MyHomework/internal/repo"
 )
 
 const (
 	defaultHttpShutdownTimeout = 5 * time.Second
+	configFile                 = "config/config.yaml"
 )
 
 func main() {
 	// init cfg
-	cfg, err := conf.NewCfg()
+	cfg, err := conf.NewCfg(configFile)
 	if err != nil {
 		log.NewLog("", "").Error(err.Error())
 		os.Exit(1)
 	}
-
 	// create logger
 	lg := log.NewLog(cfg.LogFormat, cfg.LogLevel)
 	lg.Debug(
@@ -39,7 +39,7 @@ func main() {
 	)
 
 	// connect to db
-	db, err := repo.NewDB(cfg.DbDSN)
+	db, err := repo.NewDB(cfg.DSN)
 	if err != nil {
 		lg.Error(err.Error())
 		os.Exit(1)

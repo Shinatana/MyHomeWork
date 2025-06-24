@@ -1,0 +1,13 @@
+
+
+# Data Source Name - database connection string
+dsn: ""
+
+# Log format (json or text)
+log_format: ""
+
+# Log level (debug, info, warn, error)
+log_level: ""
+
+# HTTP server port
+http_port: 0

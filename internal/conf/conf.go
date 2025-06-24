@@ -3,64 +3,43 @@ package conf
 import (
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
+	"github.com/spf13/viper"
 )
 
-type Conf struct {
-	DbDSN               string
-	LogFormat, LogLevel string
-	HttpPort            int
-}
+const (
+	prefix = "MYAPP"
+)
 
-const prefix = "MYAPP_"
+func NewCfg(configFile string) (*Conf, error) {
 
-func NewCfg() (*Conf, error) {
-	dsn, ok := os.LookupEnv(prefix + "DB_DSN")
-	if !ok {
-		return nil, fmt.Errorf("env %s not found", prefix+"DB_DSN")
-	}
+	viper.SetConfigFile(configFile)
 
-	logFormat, ok := os.LookupEnv(prefix + "LOG_FORMAT")
-	if !ok {
-		return nil, fmt.Errorf("env %s not found", prefix+"LOG_FORMAT")
-	}
+	_ = viper.ReadInConfig()
 
-	logLevel, ok := os.LookupEnv(prefix + "LOG_LEVEL")
-	if !ok {
-		return nil, fmt.Errorf("env %s not found", prefix+"LOG_LEVEL")
-	}
+	viper.SetEnvPrefix(prefix)
+	viper.AutomaticEnv()
 
-	port, ok := os.LookupEnv(prefix + "HTTP_PORT")
-	if !ok {
-		return nil, fmt.Errorf("env %s not found", prefix+"HTTP_PORT")
-	}
-	httpPort, err := strconv.Atoi(port)
-	if err != nil {
-		return nil, fmt.Errorf("env %s is not a valid port", prefix+"HTTP_PORT")
+	var cfg Conf
+
+	if err := viper.Unmarshal(&cfg); err != nil {
+		return nil, fmt.Errorf("unable to decode config into struct: %w", err)
 	}
 
 	// validate env
-	if dsn == "" {
-		return nil, errors.New("empty dsn")
+	if cfg.DSN == "" {
+		return nil, errors.New("empty DSN")
 	}
 
-	if logFormat != "json" && logFormat != "text" {
+	if cfg.LogFormat != "json" && cfg.LogFormat != "text" {
 		return nil, errors.New("wrong log format, must be json or text")
 	}
 
-	if logLevel != "debug" && logLevel != "info" && logLevel != "warn" && logLevel != "error" {
+	if cfg.LogLevel != "debug" && cfg.LogLevel != "info" && cfg.LogLevel != "warn" && cfg.LogLevel != "error" {
 		return nil, errors.New("wrong log level, must be debug, info, warn or error")
 	}
 
-	if httpPort < 1024 || httpPort > 65535 {
+	if cfg.HttpPort < 1024 || cfg.HttpPort > 65535 {
 		return nil, errors.New("port is out of valid range 1024-65535")
 	}
-
-	return &Conf{DbDSN: dsn,
-			LogFormat: logFormat,
-			LogLevel:  logLevel,
-			HttpPort:  httpPort,
-		},
-		nil
+	return &cfg, nil
 }

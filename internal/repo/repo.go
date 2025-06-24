@@ -7,17 +7,17 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
-	"github.com/Shinatana/MyHomeWork/internal/models"
+	"MyHomework/internal/models"
 )
 
 const (
 	getUserByIDQuery = "SELECT id, name, age FROM users WHERE id = $1"
-	upsertUserQuery  = "INSERT INTO users (name, age) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET age = EXCLUDED.age"
+	upsertUserQuery  = "INSERT INTO users (name, age) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET age = EXCLUDED.age RETURNING id;"
 )
 
 type UsersDB interface {
 	GetUserByID(ctx context.Context, id int64) (*models.GetUserResponse, error)
-	UpsertUser(ctx context.Context, name string, age int) error
+	UpsertUser(ctx context.Context, name string, age int) (int64, error)
 	Close() error
 }
 
@@ -28,6 +28,7 @@ type DB struct {
 func NewDB(dsn string) (UsersDB, error) {
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
+
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
@@ -61,13 +62,13 @@ func (db *DB) GetUserByID(ctx context.Context, id int64) (*models.GetUserRespons
 	return &user, nil
 }
 
-func (db *DB) UpsertUser(ctx context.Context, name string, age int) error {
-	_, err := db.db.ExecContext(ctx, upsertUserQuery, name, age)
+func (db *DB) UpsertUser(ctx context.Context, name string, age int) (int64, error) {
+	var id int64
+	err := db.db.QueryRowContext(ctx, upsertUserQuery, name, age).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("failed to upsert user: %w", err)
+		return -1, fmt.Errorf("failed to upsert user: %w", err)
 	}
-
-	return nil
+	return id, nil
 }
 
 func (db *DB) Close() error {
