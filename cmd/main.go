@@ -18,7 +18,7 @@ import (
 
 const (
 	defaultHttpShutdownTimeout = 5 * time.Second
-	configFile                 = "internal/conf/config.yaml"
+	configFile                 = "config/config.yaml"
 )
 
 func main() {

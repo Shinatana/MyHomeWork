@@ -3,18 +3,14 @@ package conf
 import (
 	"errors"
 	"fmt"
-	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
 const (
-	prefix    = "MYAPP"
-	filenames = ".env"
+	prefix = "MYAPP"
 )
 
 func NewCfg(configFile string) (*Conf, error) {
-
-	_ = godotenv.Load(filenames)
 
 	viper.SetConfigFile(configFile)
 
