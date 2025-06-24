@@ -1,13 +1,13 @@
 
 
-# Data Source Name - строка подключения к базе данных
+# Data Source Name - database connection string
 dsn: ""
 
-# Формат логов (json или text)
+# Log format (json or text)
 log_format: ""
 
-# Уровень логирования (debug, info, warn, error)
+# Log level (debug, info, warn, error)
 log_level: ""
 
-# Порт HTTP сервера
+# HTTP server port
 http_port: 0
