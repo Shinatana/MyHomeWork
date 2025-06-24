@@ -1,7 +1,7 @@
 package main
 
 import (
-	"MyHomework/pkg/conf"
+	"MyHomework/internal/conf"
 	"context"
 	"errors"
 	"net/http"
