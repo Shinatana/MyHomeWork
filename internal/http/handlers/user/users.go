@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/go-playground/validator/v10"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -102,13 +103,10 @@ func (u *User) Post() http.HandlerFunc {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}
-		if createUser.Name == "" {
-			lg.Error("An empty string was passed instead of a name")
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			return
-		}
-		if createUser.Age < 0 {
-			lg.Error("Age is negative value.", "age", createUser.Age)
+
+		validate := validator.New(validator.WithRequiredStructEnabled())
+		if err := validate.Struct(&createUser); err != nil {
+			lg.Error("Validation failed", "error", err)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}

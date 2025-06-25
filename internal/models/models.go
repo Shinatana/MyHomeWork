@@ -7,8 +7,8 @@ type GetUserResponse struct {
 }
 
 type PostUserRequest struct {
-	Name string `json:"name"`
-	Age  int    `json:"age"`
+	Name string `json:"name" validate:"required"`
+	Age  int    `json:"age" validate:"gte=0"`
 }
 
 type CreateUserResponse struct {

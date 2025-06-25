@@ -25,7 +25,7 @@ func NewCfg(configFile string) (*Conf, error) {
 		return nil, fmt.Errorf("unable to decode config into struct: %w", err)
 	}
 
-	validate := validator.New()
+	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	err := validate.Struct(&cfg)
 
