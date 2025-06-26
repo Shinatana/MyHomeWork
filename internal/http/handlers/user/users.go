@@ -20,12 +20,13 @@ const (
 )
 
 type User struct {
-	db  repo.UsersDB
-	log *slog.Logger
+	db       repo.UsersDB
+	log      *slog.Logger
+	validate *validator.Validate
 }
 
 func NewUser(db repo.UsersDB, log *slog.Logger) *User {
-	return &User{db: db, log: log}
+	return &User{db: db, log: log, validate: validator.New(validator.WithRequiredStructEnabled())}
 }
 
 func (u *User) Get() http.HandlerFunc {
@@ -104,8 +105,7 @@ func (u *User) Post() http.HandlerFunc {
 			return
 		}
 
-		validate := validator.New(validator.WithRequiredStructEnabled())
-		if err := validate.Struct(&createUser); err != nil {
+		if err := u.validate.Struct(&createUser); err != nil {
 			lg.Error("Validation failed", "error", err)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return

@@ -7,7 +7,7 @@ type GetUserResponse struct {
 }
 
 type PostUserRequest struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,min=2"`
 	Age  int    `json:"age" validate:"gte=0"`
 }
 

@@ -27,10 +27,8 @@ func NewCfg(configFile string) (*Conf, error) {
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
-	err := validate.Struct(&cfg)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed validaion: %w", err)
+	if err := validate.Struct(&cfg); err != nil {
+		return nil, fmt.Errorf("failed validation: %w", err)
 	}
 
 	return &cfg, nil
